@@ -1,9 +1,7 @@
 package com.jcandksolutions.gradle.androidunittest
 
-import com.android.build.gradle.api.ApplicationVariant
-
+import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.plugins.JavaPluginConvention
@@ -15,7 +13,7 @@ import static com.jcandksolutions.gradle.androidunittest.Logger.log
 /**
  * Class that handles the info of the variant for easier retrieval*/
 public class VariantWrapper {
-  private ApplicationVariant variant
+  private BaseVariant variant
   private FileCollection classpath
   private File compileDestinationDir
   private GString completeName
@@ -28,7 +26,7 @@ public class VariantWrapper {
   private String realMergedResourcesDir
   private String processResourcesTaskName
 
-  VariantWrapper(ApplicationVariant variant, Project project) {
+  VariantWrapper(BaseVariant variant, Project project) {
     this.variant = variant
     mergedManifest = initMergedManifest(variant)
     List<String> flavorList = initFlavorList(variant)
@@ -48,6 +46,7 @@ public class VariantWrapper {
     configureSourceSet(project, sourceSet, testSourcepath, classpath, runPath)
     resourcesCopyTaskName = initResourcesCopyTaskName(completeName)
     realMergedResourcesDir = initRealMergedResourcesDir(project, variant)
+    System.out.println("res dir: $realMergedResourcesDir")
     processResourcesTaskName = initProcessResourcesTaskName(completeName)
 
     log("build type: $buildType")
@@ -151,7 +150,7 @@ public class VariantWrapper {
    * @param variant the variant
    * @return the destination dir.
    */
-  private static File initCompileDestinationDir(Project project, ApplicationVariant variant) {
+  private static File initCompileDestinationDir(Project project, BaseVariant variant) {
     return new File("$project.buildDir${File.separator}test-classes${File.separator}$variant.dirName")
   }
 
@@ -186,7 +185,7 @@ public class VariantWrapper {
    * @param variant the variant
    * @return the merged assets dir
    */
-  private static File initMergedAssetsDir(ApplicationVariant variant) {
+  private static File initMergedAssetsDir(BaseVariant variant) {
     return variant.mergeAssets.outputDir
   }
 
@@ -206,7 +205,7 @@ public class VariantWrapper {
    * @param variant the variant
    * @return the path where the resources are merged by android plugin
    */
-  private static String initRealMergedResourcesDir(Project project, ApplicationVariant variant) {
+  private static String initRealMergedResourcesDir(Project project, BaseVariant variant) {
     return "$project.buildDir${File.separator}intermediates${File.separator}res${File.separator}$variant.dirName"
   }
 
@@ -242,7 +241,7 @@ public class VariantWrapper {
    * @param variant the variant
    * @return the list of flavors. Empty if no flavors defined.
    */
-  private static List<String> initFlavorList(ApplicationVariant variant) {
+  private static List<String> initFlavorList(BaseVariant variant) {
     List<String> flavorList = variant.productFlavors.collect { it.name.capitalize() }
     if (flavorList.empty) {
       flavorList = [""]
@@ -255,7 +254,7 @@ public class VariantWrapper {
    * @param variant the variant
    * @return the path of the merged manifest of the variant
    */
-  private static File initMergedManifest(ApplicationVariant variant) {
+  private static File initMergedManifest(BaseVariant variant) {
     return variant.processManifest.manifestOutputFile
   }
 
@@ -264,7 +263,7 @@ public class VariantWrapper {
    * @param variant the variant
    * @return the build type
    */
-  private static String initBuildType(ApplicationVariant variant) {
+  private static String initBuildType(BaseVariant variant) {
     return variant.buildType.name.capitalize()
   }
 
