@@ -1,5 +1,6 @@
 package com.jcandksolutions.gradle.androidunittest
 
+
 import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -46,7 +47,6 @@ public class VariantWrapper {
     configureSourceSet(project, sourceSet, testSourcepath, classpath, runPath)
     resourcesCopyTaskName = initResourcesCopyTaskName(completeName)
     realMergedResourcesDir = initRealMergedResourcesDir(project, variant)
-    System.out.println("res dir: $realMergedResourcesDir")
     processResourcesTaskName = initProcessResourcesTaskName(completeName)
 
     log("build type: $buildType")
