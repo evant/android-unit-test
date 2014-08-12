@@ -1,7 +1,9 @@
 package com.jcandksolutions.gradle.androidunittest
 
 
+import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.api.TestVariant
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.collections.SimpleFileCollection
@@ -15,6 +17,7 @@ import static com.jcandksolutions.gradle.androidunittest.Logger.log
  * Class that handles the info of the variant for easier retrieval*/
 public class VariantWrapper {
   private BaseVariant variant
+  private TestVariant testVariant
   private FileCollection classpath
   private File compileDestinationDir
   private GString completeName
@@ -27,8 +30,10 @@ public class VariantWrapper {
   private String realMergedResourcesDir
   private String processResourcesTaskName
 
-  VariantWrapper(BaseVariant variant, Project project) {
-    this.variant = variant
+  VariantWrapper(TestVariant testVariant, Project project) {
+    this.variant = testVariant.testedVariant
+    this.testVariant = testVariant
+
     mergedManifest = initMergedManifest(variant)
     List<String> flavorList = initFlavorList(variant)
     String flavorName = initFlavorName(flavorList)
@@ -40,13 +45,14 @@ public class VariantWrapper {
     mergedAssetsDir = initMergedAssetsDir(variant)
     compileDestinationDir = initCompileDestinationDir(project, variant)
     List<GString> configurationName = initConfigurationNames(flavorList, buildType)
-    classpath = initClasspath(project, androidCompileTask, configurationName)
+    classpath = initClasspath(project, this.variant.javaCompile, configurationName)
     runPath = initRunpath(project, classpath, compileDestinationDir, completeName)
     ArrayList<File> testSourcepath = initTestSourcepath(project, buildType, flavorName, flavorList)
     //now we can configure the sourceset
     configureSourceSet(project, sourceSet, testSourcepath, classpath, runPath)
     resourcesCopyTaskName = initResourcesCopyTaskName(completeName)
-    realMergedResourcesDir = initRealMergedResourcesDir(project, variant)
+    realMergedResourcesDir = initRealMergedResourcesDir(project,
+        variant instanceof ApplicationVariant ? variant : testVariant)
     processResourcesTaskName = initProcessResourcesTaskName(completeName)
 
     log("build type: $buildType")
@@ -336,7 +342,7 @@ public class VariantWrapper {
    * @return the compile task of the app's sources
    */
   public JavaCompile getAndroidCompileTask() {
-    return variant.javaCompile
+    return (variant instanceof ApplicationVariant ? variant : testVariant).javaCompile
   }
 
   /**
@@ -364,7 +370,7 @@ public class VariantWrapper {
   }
 
   /**
-   * Returns the real merged resources dir path. See {@link #initRealMergedResourcesDir(org.gradle.api.Project, com.android.build.gradle.api.ApplicationVariant)}
+   * Returns the real merged resources dir path. See {@link #initRealMergedResourcesDir(org.gradle.api.Project, com.android.build.gradle.api.BaseVariant)}
    * @return the real merged resources dir path
    */
   public String getRealMergedResourcesDir() {

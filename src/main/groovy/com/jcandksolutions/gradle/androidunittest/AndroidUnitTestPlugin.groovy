@@ -2,10 +2,14 @@ package com.jcandksolutions.gradle.androidunittest
 
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
+import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.api.LibraryVariant
+import com.android.build.gradle.api.TestVariant
 import com.android.builder.core.DefaultBuildType
 import com.android.builder.core.DefaultProductFlavor
 import com.android.builder.core.VariantConfiguration
@@ -186,14 +190,11 @@ class AndroidUnitTestPlugin implements Plugin<Project> {
     //we use "all" instead of "each" because this set is empty until after project evaluated
     //with "all" it will execute the closure when the variants are getting created
 
-    def variants = (androidPlugin instanceof AppPlugin) ?
-        ((AppExtension) androidPlugin.extension).applicationVariants :
-        ((LibraryExtension) androidPlugin.extension).testVariants
-
-    variants.all { BaseVariant variant ->
+    androidPlugin.extension.testVariants.all { TestVariant testVariant ->
       log("----------------------------------------")
-      if (variant.buildType.debuggable || project.androidUnitTest.testReleaseBuildType) {
-        VariantWrapper variantWrapper = new VariantWrapper(variant, project)
+      if (testVariant.buildType.debuggable || project.androidUnitTest.testReleaseBuildType) {
+
+        VariantWrapper variantWrapper =  new VariantWrapper(testVariant, project)
         VariantTaskHandler variantTaskHandler = new VariantTaskHandler(variantWrapper, project, bootClasspath, packageName, testClassesTask)
         Test variantTestTask = variantTaskHandler.createTestTask()
         testReportTask.reportOn(variantTestTask)
